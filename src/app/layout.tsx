@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
+import { TRPCReactProvider } from "@/trpc/client";
 
 
 const inter = Inter({
@@ -16,7 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resonance",
+  title: {
+    default:"Resonance",
+    template:"%s | Resonance"
+  },
   description: "Resonance - AI Voice Cloning Platform",
 };
 
@@ -32,8 +36,10 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${geistMono.variable} antialiased`}
         >
-          {children}
-          <Toaster />
+          <TRPCReactProvider>
+            {children}
+            <Toaster />
+          </TRPCReactProvider>
         </body>
       </html>
     </ClerkProvider>

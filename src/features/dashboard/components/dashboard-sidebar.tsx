@@ -33,8 +33,8 @@ import {
   Headphones,
 } from "lucide-react";
 import Link from "next/link";
-// import { UsageContainer } from "@/features/billing/components/usage-container";
-// import { VoiceCreateDialog } from "@/features/voices/components/voice-create-dialog";
+import { UsageContainer } from "@/features/billing/components/usage-container";
+import { VoiceCreateDialog } from "@/features/voices/components/voice-create-dialog";
 import { useState } from "react";
 
 interface MenuItem {
@@ -138,10 +138,10 @@ export function DashboardSidebar() {
 
   return (
     <>
-    {/* <VoiceCreateDialog
+    <VoiceCreateDialog
       open={voiceDialogOpen}
       onOpenChange={setVoiceDialogOpen}
-    /> */}
+    />
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex flex-col gap-4 pt-4">
         <div 
