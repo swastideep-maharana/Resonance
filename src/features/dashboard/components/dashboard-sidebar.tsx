@@ -131,7 +131,7 @@ export function DashboardSidebar() {
     },
     {
       title: "Help and support",
-      url: "67rishi67@gmail.com",
+      url: "mailto:business@codewithantonio.com",
       icon: Headphones,
     },
   ];
@@ -197,7 +197,7 @@ export function DashboardSidebar() {
       </SidebarContent>
       <div className="border-b border-dashed border-border" />
       <SidebarFooter className="gap-3 py-3">
-        {/* <UsageContainer /> */}
+        <UsageContainer />
         <SidebarMenu>
           <SidebarMenuItem>
             <UserButton

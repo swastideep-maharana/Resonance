@@ -1,4 +1,3 @@
-
 import * as Sentry from "@sentry/node";
 import { auth } from '@clerk/nextjs/server';
 import { initTRPC, TRPCError } from '@trpc/server';
