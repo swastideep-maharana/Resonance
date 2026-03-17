@@ -24,56 +24,45 @@ export function TextInputPanel() {
   };
 
   return (
-    <div className="
-      rounded-[22px] bg-linear-185 from-[#ff8ee3] from-15% via-[#57d7e0] via-39% to-[#dbf1f2] to-85% p-0.5 shadow-[0_0_0_4px_white]
-    ">
-      {/* Using px values for border-radius to ensure proper gradient border math (outer - padding = inner). */}
-      {/* Standard classes like rounded-4xl use CSS calc() which doesn't align cleanly at corners. */}
-      <div className="rounded-[20px] bg-[#F9F9F9] p-1">
-        <div className="space-y-4 rounded-2xl bg-white p-4 drop-shadow-xs">
+    <div className="relative group">
+      <div className="
+        relative rounded-[20px] bg-white ring-outline shadow-smooth transition-all duration-500 hover:shadow-smooth-hover
+      ">
+        <div className="space-y-4 rounded-[18px] bg-white p-6 border border-black/[0.03] shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]">
           <Textarea
             placeholder="Start typing or paste your text here..."
-            className="min-h-35 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+            className="min-h-40 resize-none border-0 bg-transparent p-0 text-lg! tracking-tight shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={TEXT_MAX_LENGTH}
           />
 
-          {/* Bottom info */}
-
-          <div className="flex items-center justify-between">
-            <Badge variant="outline" className="gap-1.5 border-dashed">
-              <Coins className="size-3 text-chart-5" />
-              <span className="text-xs">
+          <div className="flex items-center justify-between pt-4 border-t border-dashed border-border/50">
+            <Badge variant="secondary" className="gap-1.5 bg-secondary/50 hover:bg-secondary/80 transition-colors">
+              <Coins className="size-3.5 text-primary/70" />
+              <span className="text-[13px] font-medium font-mono tracking-tight">
                 {text.length === 0 ? (
-                  "Start typing to estimate"
+                  "0.0000"
                 ) : (
-                  <>
-                    <span className="tabular-nums">
-                      ${(text.length * COST_PER_UNIT).toFixed(4)}
-                    </span>{" "}
-                    estimated
-                  </>
+                  (text.length * COST_PER_UNIT).toFixed(4)
                 )}
+                <span className="text-muted-foreground text-xs ml-1">Tokens</span>
               </span>
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {text.length.toLocaleString()} / {TEXT_MAX_LENGTH.toLocaleString()} characters
-            </span>
+            <div className="flex items-center gap-4">
+               <span className="text-[12px] font-medium text-muted-foreground/70 font-mono">
+                {text.length.toLocaleString()} / {TEXT_MAX_LENGTH.toLocaleString()}
+              </span>
+              <Button
+                size="sm"
+                disabled={!text.trim()}
+                onClick={handleGenerate}
+                className="rounded-full px-6 shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Generate speech
+              </Button>
+            </div>
           </div>
-        </div>
-
-        {/* Action bar */}
-
-        <div className="flex items-center justify-end p-3">
-          <Button
-            size="sm"
-            disabled={!text.trim()}
-            onClick={handleGenerate}
-            className="w-full lg:w-auto"
-          >
-            Generate speech
-          </Button>
         </div>
       </div>
     </div>

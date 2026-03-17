@@ -147,7 +147,7 @@ export function DashboardSidebar() {
         <div 
         className="flex items-center gap-2 pl-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:pl-0">
           <Image
-            src="/logo.svg"
+            src="/icons8-audio-wave-96.png"
             alt="Resonance"
             width={24}
             height={24}

@@ -9,7 +9,7 @@ export function DashboardView() {
     <div className="relative">
       <PageHeader title="Dashboard" className="lg:hidden" />
       <HeroPattern />
-      <div className="relative space-y-8 p-4 lg:p-16">
+      <div className="relative space-y-10 p-4 lg:p-10 max-w-7xl mx-auto w-full">
         <DashboardHeader />
         <TextInputPanel />
         <QuickActionsPanel />

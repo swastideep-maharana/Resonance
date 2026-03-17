@@ -4,11 +4,11 @@ export function HeroPattern() {
   return (
     <div className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block">
       <WavyBackground
-        colors={["#2DD4BF", "#22D3EE", "#38BDF8", "#818CF8"]}
+        colors={["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC"]}
         backgroundFill="hsl(0 0% 100%)"
-        blur={3}
+        blur={2}
         speed="slow"
-        waveOpacity={0.1}
+        waveOpacity={0.05}
         waveWidth={60}
         waveYOffset={250}
         containerClassName="h-full"

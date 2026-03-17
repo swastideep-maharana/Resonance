@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { AudioLines, BookOpen, Sparkles, Volume2 } from "lucide-react";
+import { AudioLines, BookOpen, Sparkles, Volume2, Loader2 } from "lucide-react";
+
+import { useStore } from "@tanstack/react-form";
+import { useTypedAppFormContext } from "@/hooks/use-app-form";
+import { ttsFormOptions } from "./text-to-speech-form";
 
 import { Button } from "@/components/ui/button";
 
-export function VoicePreviewPlaceholder() {
+export function BaseVoicePreviewPlaceholder({ isSubmitting = false }: { isSubmitting?: boolean }) {
   return (
     <div className="hidden flex-1 lg:flex h-full flex-col items-center justify-center gap-6 border-t">
       <div className="flex flex-col items-center gap-3">
@@ -38,4 +44,11 @@ export function VoicePreviewPlaceholder() {
       </Button>
     </div>
   );
-};
+}
+
+export function VoicePreviewPlaceholder() {
+  const form = useTypedAppFormContext(ttsFormOptions);
+  const isSubmitting = useStore(form.store, (s) => s.isSubmitting);
+
+  return <BaseVoicePreviewPlaceholder isSubmitting={isSubmitting} />;
+}

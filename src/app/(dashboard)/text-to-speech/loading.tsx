@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { VoicePreviewPlaceholder } from "@/features/text-to-speech/components/voice-preview-placeholder";
+import { BaseVoicePreviewPlaceholder } from "@/features/text-to-speech/components/voice-preview-placeholder";
 
 export default function Loading() {
   return (
@@ -29,7 +29,7 @@ export default function Loading() {
           </div>
         </div>
 
-        <VoicePreviewPlaceholder />
+        <BaseVoicePreviewPlaceholder />
       </div>
 
       <div className="hidden w-105 min-h-0 flex-col border-l lg:flex">

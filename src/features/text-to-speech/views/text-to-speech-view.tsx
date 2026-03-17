@@ -44,8 +44,8 @@ export function TextToSpeechView({
   return (
     <TTSVoicesProvider value={{ customVoices, systemVoices, allVoices }}>
       <TextToSpeechForm defaultValues={defaultValues}>
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 overflow-hidden p-4 lg:p-8 max-w-[1600px] mx-auto w-full gap-8">
+          <div className="flex min-h-0 flex-1 flex-col gap-6">
             <TextInputPanel />
             <VoicePreviewPlaceholder />
           </div>
@@ -54,4 +54,4 @@ export function TextToSpeechView({
       </TextToSpeechForm>
     </TTSVoicesProvider>
   );
-};
+}

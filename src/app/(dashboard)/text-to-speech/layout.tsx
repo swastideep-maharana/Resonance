@@ -2,11 +2,11 @@ import { TextToSpeechLayout } from "@/features/text-to-speech/views/text-to-spee
 
 
 export default function Layout({
-    childern
+    children
 }:{
-    childern: React.ReactNode
+    children: React.ReactNode
 }){
     return<TextToSpeechLayout>
-        {childern}
+        {children}
     </TextToSpeechLayout>
 }

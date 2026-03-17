@@ -29,7 +29,7 @@ export function TextInputPanel() {
   return (
     <div className="flex h-full min-h-0 flex-col flex-1">
       {/* Text input area */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 mx-4 mt-4 lg:mx-6 lg:mt-6 rounded-2xl glass border border-black/[0.03] shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
         <form.Field name="text">
           {(field) => (
             <Textarea
@@ -43,7 +43,7 @@ export function TextInputPanel() {
           )}
         </form.Field>
         {/* Bottom fade overlay */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-gray-50/50 to-transparent" />
       </div>
       {/* Action bar */}
       <div className="shrink-0 p-4 lg:p-6">
