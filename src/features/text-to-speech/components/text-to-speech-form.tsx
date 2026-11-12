@@ -83,6 +83,8 @@ export function TextToSpeechForm({
               onClick: () => checkout(),
             },
           });
+        } else if (message.includes("504") || message.toLowerCase().includes("timeout")) {
+          toast.error("Voice server is warming up. Please try again in a few seconds.");
         } else {
           toast.error(message);
         }

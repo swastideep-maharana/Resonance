@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
@@ -19,6 +20,11 @@ export function TextToSpeechView({
   initialValues?: Partial<TTSFormValues>;
 }) {
   const trpc = useTRPC();
+
+  useEffect(() => {
+    fetch("/api/chatterbox/warmup", { method: "POST" }).catch(() => {});
+  }, []);
+
   const { 
     data: voices,
   } = useSuspenseQuery(trpc.voices.getAll.queryOptions());
