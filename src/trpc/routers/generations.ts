@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
-import { polar } from "@/lib/polar";
+import { hasActivePolarSubscription, polar } from "@/lib/polar";
 import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
@@ -57,21 +57,17 @@ export const generationsRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       // Check for active subscription before generation
+      let hasActiveSubscription = false;
       try {
-        const customerState = await polar.customers.getStateExternal({
-          externalId: ctx.orgId,
+        hasActiveSubscription = await hasActivePolarSubscription(ctx.orgId);
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to verify subscription status",
         });
-        const hasActiveSubscription =
-          (customerState.activeSubscriptions ?? []).length > 0;
-        if (!hasActiveSubscription) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "SUBSCRIPTION_REQUIRED",
-          });
-        }
-      } catch (err) {
-        if (err instanceof TRPCError) throw err;
-        // Customer doesn't exist in Polar yet -> no subscription
+      }
+
+      if (!hasActiveSubscription) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "SUBSCRIPTION_REQUIRED",

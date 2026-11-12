@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { parseBuffer } from "music-metadata";
 import { z } from "zod";
-import { polar } from "@/lib/polar";
+import { hasActivePolarSubscription, polar } from "@/lib/polar";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/db";
 import { uploadAudio } from "@/lib/r2";
@@ -25,18 +25,18 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-    // Check for active subscription before voice creation
+  // Check for active subscription before voice creation
+  let hasActiveSubscription = false;
   try {
-    const customerState = await polar.customers.getStateExternal({
-      externalId: orgId,
-    });
-    const hasActiveSubscription =
-      (customerState.activeSubscriptions ?? []).length > 0;
-    if (!hasActiveSubscription) {
-      return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
-    }
+    hasActiveSubscription = await hasActivePolarSubscription(orgId);
   } catch {
-    // Customer doesn't exist in Polar yet -> no subscription
+    return Response.json(
+      { error: "Failed to verify subscription status" },
+      { status: 500 },
+    );
+  }
+
+  if (!hasActiveSubscription) {
     return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
   }
 
