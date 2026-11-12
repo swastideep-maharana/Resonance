@@ -49,9 +49,14 @@ export const billingRouter = createTRPCRouter({
     }
 
     try {
-      const customerState = await polar.customers.getStateExternal({
-        externalId: ctx.orgId,
-      });
+      const customerState = await Promise.race([
+        polar.customers.getStateExternal({
+          externalId: ctx.orgId,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Polar status timeout")), 5000),
+        ),
+      ]);
 
       const hasActiveSubscription =
         (customerState.activeSubscriptions ?? []).length > 0;

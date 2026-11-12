@@ -57,22 +57,44 @@ export function TextToSpeechForm({
       onSubmit: ttsFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const data = await createMutation.mutateAsync({
-          text: value.text.trim(),
-          voiceId: value.voiceId,
-          temperature: value.temperature,
-          topP: value.topP,
-          topK: value.topK,
-          repetitionPenalty: value.repetitionPenalty,
-        });
+      const payload = {
+        text: value.text.trim(),
+        voiceId: value.voiceId,
+        temperature: value.temperature,
+        topP: value.topP,
+        topK: value.topK,
+        repetitionPenalty: value.repetitionPenalty,
+      };
 
+      const isTimeout = (err: unknown) => {
+        const msg = err instanceof Error ? err.message : "";
+        return msg.includes("504") || msg.toLowerCase().includes("timeout");
+      };
+
+      try {
+        let data;
+        try {
+          data = await createMutation.mutateAsync(payload);
+        } catch (firstError) {
+          if (!isTimeout(firstError)) {
+            throw firstError;
+          }
+          // Modal GPU cold-start takes ~63s; retry once after Vercel's 60s timeout
+          toast.loading("Voice server is warming up, retrying...", {
+            id: "tts-warmup-retry",
+          });
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          data = await createMutation.mutateAsync(payload);
+        }
+
+        toast.dismiss("tts-warmup-retry");
         toast.success("Audio generated successfully!");
         queryClient.invalidateQueries({
           queryKey: trpc.billing.getStatus.queryKey(),
         });
         router.push(`/text-to-speech/${data.id}`);
       } catch (error) {
+        toast.dismiss("tts-warmup-retry");
         const message =
           error instanceof Error ? error.message : "Failed to generate audio";
 
@@ -83,8 +105,8 @@ export function TextToSpeechForm({
               onClick: () => checkout(),
             },
           });
-        } else if (message.includes("504") || message.toLowerCase().includes("timeout")) {
-          toast.error("Voice server is warming up. Please try again in a few seconds.");
+        } else if (isTimeout(error)) {
+          toast.error("Voice server is still warming up. Please click Generate speech again.");
         } else {
           toast.error(message);
         }

@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { env } from "@/lib/env";
 
+export const maxDuration = 60;
+
 export async function POST() {
   const { userId } = await auth();
   if (!userId) {
@@ -14,7 +16,7 @@ export async function POST() {
       headers: {
         "x-api-key": env.CHATTERBOX_API_KEY,
       },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(55000),
     });
     return Response.json({ warm: true });
   } catch {
