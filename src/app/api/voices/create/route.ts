@@ -19,6 +19,8 @@ const createVoiceSchema = z.object({
   description: z.string().nullish(),
 });
 
+export const maxDuration = 60;
+
 const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
 const MIN_AUDIO_DURATION_SECONDS = 10;
 
