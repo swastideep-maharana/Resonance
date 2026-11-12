@@ -22,7 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { VoiceCreateForm } from "./voice-create-form";
 import { Button } from "@/components/ui/button";
 import { useCheckout } from "@/features/billing/hooks/use-checkout";
-import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useCallback } from "react";
+import { type ReactNode, useCallback } from "react";
 import { toast } from "sonner";
 
 interface VoiceCreateDialogProps {
@@ -71,7 +71,7 @@ export function VoiceCreateDialog({
           <VoiceCreateForm
             scrollable
             onError={handleError}
-            footer={(submit: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined) => (
+            footer={(submit: ReactNode) => (
               <DrawerFooter>
                 {submit}
                 <DrawerClose asChild>

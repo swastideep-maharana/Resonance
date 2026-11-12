@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
-const path = require('path');
 
 const srcPath = "h:/Projects(github)/Ai Voice Cloning Platform/resonance/public/icons8-audio-wave-96.png";
 const iconDest = "h:/Projects(github)/Ai Voice Cloning Platform/resonance/src/app/icon.png";

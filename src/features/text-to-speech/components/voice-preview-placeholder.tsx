@@ -20,7 +20,11 @@ export function BaseVoicePreviewPlaceholder({ isSubmitting = false }: { isSubmit
           </div>
 
           <div className="relative z-10 rounded-full bg-foreground p-4">
-            <Sparkles className="size-5 text-background" />
+            {isSubmitting ? (
+              <Loader2 className="size-5 animate-spin text-background" />
+            ) : (
+              <Sparkles className="size-5 text-background" />
+            )}
           </div>
 
           <div className="absolute right-0 -rotate-30 rounded-full bg-muted p-4">
