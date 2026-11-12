@@ -43,9 +43,9 @@ export function VoiceCreateDialog({
   const handleError = useCallback(
     (message: string) => {
       if (message === "SUBSCRIPTION_REQUIRED") {
-        toast.error("Subscription required", {
+        toast.error("Daily free limit reached. Upgrade to continue.", {
           action: {
-            label: "Subscribe",
+            label: "Upgrade",
             onClick: () => checkout(),
           },
         });

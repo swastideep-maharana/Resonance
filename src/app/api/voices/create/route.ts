@@ -1,7 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { parseBuffer } from "music-metadata";
 import { z } from "zod";
-import { hasActivePolarSubscription, polar } from "@/lib/polar";
+import {
+  getDailyFreeUsage,
+  hasActivePolarSubscription,
+  polar,
+} from "@/lib/polar";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/db";
 import { uploadAudio } from "@/lib/r2";
@@ -25,7 +29,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check for active subscription before voice creation
+  // Check for active subscription or remaining daily free-tier quota
   let hasActiveSubscription = false;
   try {
     hasActiveSubscription = await hasActivePolarSubscription(orgId);
@@ -37,7 +41,10 @@ export async function POST(request: Request) {
   }
 
   if (!hasActiveSubscription) {
-    return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
+    const { voicesUsed, voicesLimit } = await getDailyFreeUsage(orgId);
+    if (voicesUsed >= voicesLimit) {
+      return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
+    }
   }
 
   const url = new URL(request.url);
@@ -166,20 +173,22 @@ export async function POST(request: Request) {
   }
 
   // Ingest usage event to Polar (fire-and-forget, don't block response)
-  polar.events
-    .ingest({
-      events: [
-        {
-          name: env.POLAR_METER_VOICE_CREATION,
-          externalCustomerId: orgId,
-          metadata: {},
-          timestamp: new Date(),
-        },
-      ],
-    })
-    .catch(() => {
-      // Silently fail - don't break the user experience for metering errors
-    });
+  if (hasActiveSubscription && !env.DISABLE_BILLING_CHECK) {
+    polar.events
+      .ingest({
+        events: [
+          {
+            name: env.POLAR_METER_VOICE_CREATION,
+            externalCustomerId: orgId,
+            metadata: {},
+            timestamp: new Date(),
+          },
+        ],
+      })
+      .catch(() => {
+        // Silently fail - don't break the user experience for metering errors
+      });
+  }
 
   return Response.json(
     { name, message: "Voice created successfully" },

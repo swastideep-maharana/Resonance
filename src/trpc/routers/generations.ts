@@ -1,6 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
-import { hasActivePolarSubscription, polar } from "@/lib/polar";
+import {
+  getDailyFreeUsage,
+  hasActivePolarSubscription,
+  polar,
+} from "@/lib/polar";
 import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
@@ -56,7 +60,7 @@ export const generationsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Check for active subscription before generation
+      // Check for active subscription or remaining daily free-tier quota
       let hasActiveSubscription = false;
       try {
         hasActiveSubscription = await hasActivePolarSubscription(ctx.orgId);
@@ -68,10 +72,15 @@ export const generationsRouter = createTRPCRouter({
       }
 
       if (!hasActiveSubscription) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "SUBSCRIPTION_REQUIRED",
-        });
+        const { generationsUsed, generationsLimit } = await getDailyFreeUsage(
+          ctx.orgId,
+        );
+        if (generationsUsed >= generationsLimit) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "SUBSCRIPTION_REQUIRED",
+          });
+        }
       }
 
       const voice = await prisma.voice.findUnique({
@@ -205,20 +214,22 @@ export const generationsRouter = createTRPCRouter({
       }
 
       // Ingest usage event to Polar (fire-and-forget, don't block response)
-      polar.events
-        .ingest({
-          events: [
-            {
-              name: env.POLAR_METER_TTS_GENERATION,
-              externalCustomerId: ctx.orgId,
-              metadata: { [env.POLAR_METER_TTS_PROPERTY]: input.text.length },
-              timestamp: new Date(),
-            },
-          ],
-        })
-        .catch(() => {
-          // Silently fail - don't break the user experience for metering errors
-        });
+      if (hasActiveSubscription && !env.DISABLE_BILLING_CHECK) {
+        polar.events
+          .ingest({
+            events: [
+              {
+                name: env.POLAR_METER_TTS_GENERATION,
+                externalCustomerId: ctx.orgId,
+                metadata: { [env.POLAR_METER_TTS_PROPERTY]: input.text.length },
+                timestamp: new Date(),
+              },
+            ],
+          })
+          .catch(() => {
+            // Silently fail - don't break the user experience for metering errors
+          });
+      }
 
       return {
         id: generationId,

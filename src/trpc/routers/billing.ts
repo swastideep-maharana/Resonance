@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { polar } from "@/lib/polar";
+import { getDailyFreeUsage, polar } from "@/lib/polar";
 import { env } from "@/lib/env";
 import { createTRPCRouter, orgProcedure } from "../init";
 
@@ -37,6 +37,17 @@ export const billingRouter = createTRPCRouter({
   }),
 
   getStatus: orgProcedure.query(async ({ ctx }) => {
+    const freeUsage = await getDailyFreeUsage(ctx.orgId);
+
+    if (env.DISABLE_BILLING_CHECK) {
+      return {
+        hasActiveSubscription: true,
+        customerId: null,
+        estimatedCostCents: 0,
+        freeUsage,
+      };
+    }
+
     try {
       const customerState = await polar.customers.getStateExternal({
         externalId: ctx.orgId,
@@ -57,6 +68,7 @@ export const billingRouter = createTRPCRouter({
         hasActiveSubscription,
         customerId: customerState.id,
         estimatedCostCents,
+        freeUsage,
       };
     } catch {
       // Customer doesn't exist yet in Polar
@@ -64,6 +76,7 @@ export const billingRouter = createTRPCRouter({
         hasActiveSubscription: false,
         customerId: null,
         estimatedCostCents: 0,
+        freeUsage,
       };
     }
   }),

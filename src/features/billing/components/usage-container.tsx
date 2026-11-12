@@ -3,9 +3,11 @@ import { useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { useCheckout } from "@/features/billing/hooks/use-checkout";
 import { useTRPC } from "@/trpc/client";
+import type { DailyFreeUsage } from "@/lib/polar";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -14,19 +16,71 @@ function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
-function UpgradeCard() {
+function UsageBar({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+}) {
+  const percentage = limit > 0 ? Math.min(100, (used / limit) * 100) : 100;
+  const reached = used >= limit;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span
+          className={
+            reached ? "font-medium text-destructive" : "font-medium text-foreground"
+          }
+        >
+          {Math.min(used, limit)} / {limit}
+        </span>
+      </div>
+      <Progress value={percentage} className="h-1.5" />
+    </div>
+  );
+}
+
+function UpgradeCard({ freeUsage }: { freeUsage?: DailyFreeUsage }) {
   const { checkout, isPending: isCheckoutPending } = useCheckout();
+  const limitReached =
+    freeUsage !== undefined &&
+    (freeUsage.generationsUsed >= freeUsage.generationsLimit ||
+      freeUsage.voicesUsed >= freeUsage.voicesLimit);
 
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-sm font-semibold tracking-tight text-foreground">
-          Pay as you go
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold tracking-tight text-foreground">
+            Free plan
+          </p>
+          <span className="text-[11px] text-muted-foreground">Daily</span>
+        </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Generate speech starting at $0.30 per 1,000 characters
+          {limitReached
+            ? "Daily limit reached. Upgrade for unlimited access."
+            : "Upgrade anytime for unlimited pay-as-you-go usage."}
         </p>
       </div>
+      {freeUsage && (
+        <div className="space-y-2">
+          <UsageBar
+            label="Generations"
+            used={freeUsage.generationsUsed}
+            limit={freeUsage.generationsLimit}
+          />
+          <UsageBar
+            label="Voice clones"
+            used={freeUsage.voicesUsed}
+            limit={freeUsage.voicesLimit}
+          />
+        </div>
+      )}
       <Button
         variant="outline"
         className="w-full text-xs"
@@ -107,7 +161,7 @@ export function UsageContainer() {
       {data?.hasActiveSubscription ? (
         <UsageCard estimatedCostCents={data.estimatedCostCents} />
       ) : (
-        <UpgradeCard />
+        <UpgradeCard freeUsage={data?.freeUsage} />
       )}
     </div>
   );
