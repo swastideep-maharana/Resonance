@@ -67,8 +67,20 @@ export function TextToSpeechForm({
       };
 
       const isTimeout = (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "";
-        return msg.includes("504") || msg.toLowerCase().includes("timeout");
+        if (!err || typeof err !== "object") return false;
+        const e = err as {
+          message?: string;
+          data?: { httpStatus?: number };
+          meta?: { response?: { status?: number } };
+        };
+        const msg = e.message ?? "";
+        return (
+          e.meta?.response?.status === 504 ||
+          e.data?.httpStatus === 504 ||
+          msg.includes("504") ||
+          msg.includes("FUNCTION_INVOCATION_TIMEOUT") ||
+          msg.toLowerCase().includes("timeout")
+        );
       };
 
       try {
