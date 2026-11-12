@@ -22,7 +22,27 @@ export function TextToSpeechView({
   const trpc = useTRPC();
 
   useEffect(() => {
-    fetch("/api/chatterbox/warmup", { method: "POST" }).catch(() => {});
+    let cancelled = false;
+
+    async function warmUp() {
+      for (let i = 0; i < 4 && !cancelled; i++) {
+        try {
+          const res = await fetch("/api/chatterbox/warmup", { method: "POST" });
+          if (res.ok) {
+            const json = (await res.json()) as { warm?: boolean };
+            if (json.warm) return;
+          }
+        } catch {
+          // Ignore and retry
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+
+    warmUp();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const { 

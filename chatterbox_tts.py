@@ -31,10 +31,18 @@ r2_bucket = modal.CloudBucketMount(
 )
 
 # Modal setup
-image = modal.Image.debian_slim(python_version="3.10").uv_pip_install(
-    "chatterbox-tts==0.1.6",
-    "fastapi[standard]==0.124.4",
-    "peft==0.18.0",
+def download_model():
+    from huggingface_hub import snapshot_download
+    snapshot_download("ResembleAI/chatterbox-turbo")
+
+image = (
+    modal.Image.debian_slim(python_version="3.10")
+    .uv_pip_install(
+        "chatterbox-tts==0.1.6",
+        "fastapi[standard]==0.124.4",
+        "peft==0.18.0",
+    )
+    .run_function(download_model, secrets=[modal.Secret.from_name("hf-token")])
 )
 app = modal.App("chatterbox-tts", image=image)
 

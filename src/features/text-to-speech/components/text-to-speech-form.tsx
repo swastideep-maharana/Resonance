@@ -79,24 +79,34 @@ export function TextToSpeechForm({
           e.data?.httpStatus === 504 ||
           msg.includes("504") ||
           msg.includes("FUNCTION_INVOCATION_TIMEOUT") ||
+          msg.includes("Unexpected token") ||
+          msg.includes("Unable to transform response") ||
           msg.toLowerCase().includes("timeout")
         );
       };
 
       try {
         let data;
-        try {
-          data = await createMutation.mutateAsync(payload);
-        } catch (firstError) {
-          if (!isTimeout(firstError)) {
-            throw firstError;
+        const maxAttempts = 4;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            data = await createMutation.mutateAsync(payload);
+            break;
+          } catch (attemptError) {
+            if (!isTimeout(attemptError) || attempt === maxAttempts) {
+              throw attemptError;
+            }
+            // Modal cold-start can exceed Vercel's 60s limit; retry while it warms up
+            toast.loading(
+              `Voice server is warming up (attempt ${attempt}/${maxAttempts - 1}), retrying...`,
+              { id: "tts-warmup-retry" },
+            );
+            await new Promise((resolve) => setTimeout(resolve, 4000));
           }
-          // Modal GPU cold-start takes ~63s; retry once after Vercel's 60s timeout
-          toast.loading("Voice server is warming up, retrying...", {
-            id: "tts-warmup-retry",
-          });
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-          data = await createMutation.mutateAsync(payload);
+        }
+
+        if (!data) {
+          throw new Error("Failed to generate audio");
         }
 
         toast.dismiss("tts-warmup-retry");
