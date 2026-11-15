@@ -7,7 +7,7 @@ import {
 } from "@/lib/polar";
 import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
-import { chatterbox } from "@/lib/chatterbox-client";
+import { generateSpeech } from "@/lib/chatterbox-client";
 import { prisma } from "@/lib/db";
 import { uploadAudio } from "@/lib/r2";
 import { TEXT_MAX_LENGTH } from "@/features/text-to-speech/data/constants";
@@ -112,40 +112,29 @@ export const generationsRouter = createTRPCRouter({
         });
       }
 
-      const { data, error } = await chatterbox.POST("/generate", {
-        body: {
+      let buffer: Buffer;
+      try {
+        buffer = await generateSpeech({
           prompt: input.text,
-          voice_key: voice.r2ObjectKey,
+          voiceKey: voice.r2ObjectKey,
           temperature: input.temperature,
-          top_p: input.topP,
-          top_k: input.topK,
-          repetition_penalty: input.repetitionPenalty,
-          norm_loudness: true,
-        },
-        parseAs: "arrayBuffer",
-      });
+          topP: input.topP,
+          topK: input.topK,
+          repetitionPenalty: input.repetitionPenalty,
+        });
+      } catch (err: any) {
+        console.error("Speech generation error:", err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: err?.message || "Failed to generate audio",
+        });
+      }
 
       Sentry.logger.info("Generation started", {
         orgId: ctx.orgId,
         voiceId: input.voiceId,
         textLength: input.text.length,
       });
-
-      if (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to generate audio",
-        });
-      }
-
-      if (!(data instanceof ArrayBuffer)) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Invalid audio response",
-        });
-      }
-
-      const buffer = Buffer.from(data);
       let generationId: string | null = null;
       let r2ObjectKey: string | null = null;
 

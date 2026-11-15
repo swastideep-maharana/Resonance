@@ -10,18 +10,16 @@ export async function POST() {
   }
 
   try {
-    // Ping the Modal ASGI app to trigger @modal.enter() model loading while the user types
-    await fetch(`${env.CHATTERBOX_API_URL}/openapi.json`, {
-      method: "GET",
+    const token = env.HF_ACCESS_TOKEN || process.env.HF_ACCESS_TOKEN || "";
+    const res = await fetch("https://huggingface.co/api/spaces/swastideep/resonance-tts", {
       headers: {
-        "x-api-key": env.CHATTERBOX_API_KEY,
+        Authorization: `Bearer ${token}`,
       },
-      signal: AbortSignal.timeout(55000),
+      signal: AbortSignal.timeout(10000),
     });
-    return Response.json({ warm: true });
+    const data = await res.json();
+    return Response.json({ warm: data.runtime?.stage === "RUNNING", stage: data.runtime?.stage });
   } catch {
-    // Container is likely still cold-starting in the background
     return Response.json({ warm: false });
   }
 }
-

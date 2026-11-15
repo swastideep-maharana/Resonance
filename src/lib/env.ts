@@ -17,6 +17,7 @@ export const env = createEnv({
     R2_BUCKET_NAME: z.string().min(1),
     CHATTERBOX_API_URL: z.url(),
     CHATTERBOX_API_KEY: z.string().min(1),
+    HF_ACCESS_TOKEN: z.string().optional(),
     DISABLE_BILLING_CHECK: z
       .enum(["true", "false"])
       .default("false")
